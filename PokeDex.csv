@@ -1,0 +1,10 @@
+Number,Pokemon,Type1,Type2,Gender,Prev Evo,Next Evo
+1,Bulbasaur,Grass,Poison,Both,None,Ivysaur
+2,Ivysaur,Grass,Poison,Both,Bulbasaur,Venusar
+3,Venusar,Grass,Poison,Both,Ivysaur,None
+4,Charmander,Fire,,Both,None,Charmeleon
+5,Charmeleon,Fire,,Both,Charmander,Charizard
+6,Charizard,Fire,Flying,Both,Charmeleon,None
+7,Squirtle,Water,,Both,None,Wartortle
+8,Wartortle,Water,,Both,Squirtle,Blastoise
+9,Blastoise,Water,,Both,Wartortle,None
