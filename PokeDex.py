@@ -1,4 +1,8 @@
 import requests
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
+import io
 
 
 def get_pokemon_info(pokemon_name, display_moves=False):
@@ -39,7 +43,7 @@ def get_pokemon_info(pokemon_name, display_moves=False):
             "types": types,
             "abilities": abilities,
             "stats": stats,
-            "version" : version,
+            "versions" : version,
             "moves": moves
         }
 
@@ -49,33 +53,69 @@ def get_pokemon_info(pokemon_name, display_moves=False):
         print(f"Error: {response.status_code}")
         return None
 
-
-if __name__ == "__main__":
-    while True:
-        command = input("Enter name of a Pokémon, 'moves', or type 'exit' to quit: ")
-
-        if command.lower() == 'exit':
-            break
-        elif command.lower() == "moves":
-            display_moves = True
-            continue
+def display_pokemon_image(pokemon_name):
+    image_url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{pokemon_name}.png"
+    response = requests.get(image_url)
+    try:
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            image_data = response.content
+            img = Image.open(io.BytesIO(image_data))
+            img = img.resize((100, 100), Image.ANTIALIAS)
+            photo = ImageTk.PhotoImage(img)
+            label_image = tk.Label(root, image=photo)
+            label_image.image = photo
+            label_image.pack()
         else:
-            display_moves = False
+            print("Image not found.")
+    except Exception as e:
+        print(f"Error displaying image: {e}")
 
-        if command.strip():
-            pokemon_info = get_pokemon_info(command, display_moves)
-            if pokemon_info:
-                print("Pokemon Info:")
-                print(f"Name: {pokemon_info['name']}")
-                print(f"Types: {', '.join(pokemon_info['types'])}")
-                print(f"Abilities: {', '.join(pokemon_info['abilities'])}")
-                if display_moves:
-                    print(f"Moves: {', '.join(pokemon_info['moves'])}")
-                print(f"Version Introduced: {', '.join(pokemon_info['version'])}")
-                print("Stats:")
-                for stat, value in pokemon_info['stats'].items():
-                    print(f" - {stat}: {value}")
-            else:
-                print("An error occurred. Please try again.")
+def search_pokemon():
+    pokemon_name = entry.get()
+    if pokemon_name.strip():
+        pokemon_info = get_pokemon_info(pokemon_name)
+        if pokemon_info:
+            text_widget.config(state = tk.NORMAL)
+            text_widget.delete(1.0, tk.END)
+
+            # Display Pokémon data in the Tkinter window
+            text_widget.insert(tk.END, "Pokemon Info:\n")
+            text_widget.insert(tk.END, f"Name: {pokemon_info['name']}\n")
+            text_widget.insert(tk.END, f"Types: {', '.join(pokemon_info['types'])}\n")
+            text_widget.insert(tk.END, f"Abilities: {', '.join(pokemon_info['abilities'])}\n")
+            text_widget.insert(tk.END, f"Versions Introduced: {', '.join(pokemon_info['versions'])}\n")
+            text_widget.insert(tk.END, "Stats:\n")
+            for stat, value in pokemon_info['stats'].items():
+                text_widget.insert(tk.END, f" - {stat}: {value}\n")
+            display_pokemon_image(pokemon_name)  # Call this function to display the image
+            text_widget.config(state=tk.DISABLED)  # Set text widget back to DISABLED (read-only)
         else:
-            print("Please enter a valid Pokémon name, 'moves', or type 'exit' to quit")
+            text_widget.config(state=tk.NORMAL)
+            text_widget.insert(tk.END, "An error occurred. Please try again.\n")
+            text_widget.config(state=tk.DISABLED)
+    else:
+        text_widget.config(state=tk.NORMAL)
+        text_widget.insert(tk.END, "Please enter a valid Pokémon name.\n")
+        text_widget.config(state=tk.DISABLED)
+
+root = tk.Tk()
+root.title("Pokemon Info Search")
+
+label = tk.Label(root, text="Enter the name of a Pokemon: ")
+entry = tk.Entry(root)
+search_button = tk.Button(root, text="Search", command=search_pokemon)
+
+# Create a text widget to display Pokémon data
+text_widget = tk.Text(root, wrap=tk.WORD, width=40, height=20)
+text_widget.insert(tk.END, "Pokémon Info will be displayed here.\n")
+text_widget.config(state=tk.DISABLED)  # Make it read-only
+
+label.pack()
+entry.pack()
+search_button.pack()
+text_widget.pack()
+
+
+
+root.mainloop()
